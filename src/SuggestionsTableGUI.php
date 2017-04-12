@@ -1,6 +1,10 @@
 <?php namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
 
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\CourseConfigProvider;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjective;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveQuery;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjectiveSuggestion;
 
 require_once('./Services/Table/classes/class.ilTable2GUI.php');
 require_once('./Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php');
@@ -30,6 +34,11 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 	protected $filter = array();
 
 	/**
+	 * @var LearningObjectiveQuery
+	 */
+	protected $learning_objective_query;
+
+	/**
 	 * @param $a_parent_obj
 	 * @param LearningObjectiveCourse $course
 	 */
@@ -40,6 +49,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		parent::__construct($a_parent_obj, '', '');
 		$this->ctrl = $ilCtrl;
 		$this->course = $course;
+		$this->learning_objective_query = new LearningObjectiveQuery(new CourseConfigProvider($course));
 		$this->setFormAction($this->ctrl->getFormAction($a_parent_obj));
 		$this->setRowTemplate('tpl.row_generic.html', './Customizing/global/plugins/Services/UIComponent/UserInterfaceHook/LearningObjectiveSuggestionsUI');
 		$this->setTitle('Lernziel Empfehlungen');
@@ -56,7 +66,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			'firstname' => array('txt' => 'Vorname', 'default' => true),
 			'lastname' => array('txt' => 'Nachname', 'default' => true),
 			'email' => array('txt' => 'E-Mail', 'default' => false),
-			'suggetions' => array('txt' => 'Lernziel Empfehlungen', 'default' => true),
+			'suggestions' => array('txt' => 'Lernziel Empfehlungen', 'default' => true),
 			'notification_sent_at' => array('txt' => 'Benachrichtigt am', 'default' => true),
 		);
 	}
@@ -117,7 +127,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 	protected function addColumns() {
 		foreach ($this->getSelectableColumns() as $column => $data) {
 			if ($this->isColumnSelected($column)) {
-				$sort = ($column == 'suggetions') ? '' : $column;
+				$sort = ($column == 'suggestions') ? '' : $column;
 				$this->addColumn($data['txt'], $sort);
 			}
 		}
@@ -138,7 +148,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		}
 		$list = new \ilAdvancedSelectionListGUI();
 		static $id = 0;
-		$list->setId(++$id);
+		$list->setId(implode('_', array($this->getId(), ++$id)));
 		$this->ctrl->setParameter($this->parent_obj, 'user_id', $a_set['user_id']);
 		$list->addItem('Empfehlungen bearbeiten', '', $this->ctrl->getLinkTarget($this->parent_obj, 'editSuggestions'));
 		$list->addItem('Empfehlungen verschicken', '', $this->ctrl->getLinkTarget($this->parent_obj, 'editSendNotification'));
@@ -152,11 +162,33 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 	protected function getFormattedValue($column, $a_set) {
 		$value = $a_set[$column];
 		switch ($column) {
+			case 'suggestions':
+				$objectives = array_map(function($objective) {
+					return $objective->getTitle();
+				}, $this->getSuggestedLearningObjectives($a_set['user_id']));
+				return implode('<br>', $objectives);
 			case 'notification_sent_at':
 				return ($value) ? date('d.m.Y, H:i:s', strtotime($value)) : '&nbsp;';
 			default:
 				return ($value) ? $value : '&nbsp;';
 		}
+	}
+
+	/**
+	 * @param int $user_id
+	 * @return LearningObjective[]
+	 */
+	protected function getSuggestedLearningObjectives($user_id) {
+		$suggestions = LearningObjectiveSuggestion::where(array(
+			'user_id' => $user_id,
+			'course_obj_id' => $this->course->getId()
+		))->orderBy('sort')->get();
+		$return = array();
+		foreach ($suggestions as $suggestion) {
+			/** @var $suggestion LearningObjectiveSuggestion */
+			$return[] = $this->learning_objective_query->getByObjectiveId($suggestion->getObjectiveId());
+		}
+		return $return;
 	}
 
 }

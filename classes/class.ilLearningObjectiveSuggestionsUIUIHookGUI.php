@@ -11,6 +11,11 @@ require_once('./Services/UIComponent/classes/class.ilUIHookPluginGUI.php');
 class ilLearningObjectiveSuggestionsUIUIHookGUI extends ilUIHookPluginGUI {
 
 	function modifyGUI($a_comp, $a_part, $a_par = array()) {
+		global $ilPluginAdmin;
+		/** @var $ilPluginAdmin ilPluginAdmin */
+		if (!$ilPluginAdmin->isActive('Services', 'Cron', 'crnhk', 'LearningObjectiveSuggestions')) {
+			return;
+		}
 		if ($a_part == 'tabs' && $this->displayTab() && $this->checkAccess()) {
 			$this->addTab($a_par['tabs']);
 		}

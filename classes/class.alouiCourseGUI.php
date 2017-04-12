@@ -3,9 +3,12 @@
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\CourseConfigProvider;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveQuery;
-use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\InternalMailSender;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Log\ModificationLog;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\InternalMail;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\Notification;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\Sender;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\TwigParser;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjectiveSuggestionModification;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsFormGUI;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsSendFormGUI;
@@ -47,12 +50,18 @@ class alouiCourseGUI {
 	 */
 	protected $tabs;
 
+	/**
+	 * @var ilAccessHandler
+	 */
+	protected $access;
+
 	public function __construct() {
-		global $ilCtrl, $lng, $tpl, $ilTabs;
+		global $ilCtrl, $lng, $tpl, $ilTabs, $ilAccess;
 		$this->ctrl = $ilCtrl;
 		$this->lng = $lng;
 		$this->tpl = $tpl;
 		$this->tabs = $ilTabs;
+		$this->access = $ilAccess;
 		$this->tpl->getStandardTemplate();
 	}
 
@@ -100,17 +109,6 @@ class alouiCourseGUI {
 		}
 	}
 
-	/**
-	 * @param User $user
-	 * @return Notification
-	 */
-	protected function getNotification(User $user) {
-		return Notification::where(array(
-			'user_id' => $user->getId(),
-			'course_obj_id' => $this->course->getId()
-		))->first();
-	}
-
 	protected function sendNotification() {
 		$this->ctrl->saveParameter($this, 'user_id');
 		$user = new User(new ilObjUser((int)$_GET['user_id']));
@@ -118,42 +116,34 @@ class alouiCourseGUI {
 		$form = new SuggestionsSendFormGUI($course, $user, new TwigParser());
 		$form->setFormAction($this->ctrl->getFormAction($this));
 		if ($form->checkInput()) {
-			$config = new CourseConfigProvider($course);
-			$sender = new User(new ilObjUser($config->get('notification_sender_user_id')));
-			$mail = new InternalMailSender();
-			$mail->subject($form->getInput('subject'))
-				->body($form->getInput('body'))
-				->from($sender)
-				->to($user);
-			if ($cc_role_id = $config->get('notification_cc_role_id')) {
-				$mail->cc(new ilObjRole($cc_role_id));
-			}
-			if ($mail->send()) {
-				$notification = $this->getNotification($user);
-				if ($notification === null) {
-					$notification = new Notification();
-					$notification->setUserId($user->getId());
-					$notification->setCourseObjId($course->getId());
-				}
-				$notification->setSentUserId($sender->getId());
-				$notification->setSentAt(date('Y-m-d H:i:s'));
-				$notification->save();
+			$sender = new Sender($course, $user);
+			$sender->subject($form->getInput('subject'))
+				->body($form->getInput('body'));
+			if ($sender->send()) {
 				ilUtil::sendSuccess('Die Lernziel Empfehlungen wurden an den Benutzer und Betreuer verschickt', true);
 				$this->ctrl->redirect($this);
 			}
-			ilUtil::sendFailure('Das E-Mail konnte nicht gesendet werden');
 		}
 		$form->setValuesByPost();
 		$this->tpl->setContent($form->getHTML());
 	}
 
 	protected function saveSuggestions() {
+		global $ilUser;
+		$this->ctrl->saveParameter($this, 'user_id');
 		$user = new User(new ilObjUser((int)$_GET['user_id']));
 		$course = new LearningObjectiveCourse($this->course);
 		$query = new LearningObjectiveQuery(new CourseConfigProvider($course));
 		$form = new SuggestionsFormGUI($course, $user, $query);
 		if ($form->checkInput()) {
-			// TODO
+			$editor = new User($ilUser);
+			$modifier = new LearningObjectiveSuggestionModification($course, $user, $editor, new ModificationLog());
+			$objectives = array_map(function($objective_id) use ($query) {
+				return $query->getByObjectiveId($objective_id);
+			}, $form->getInput('suggestions'));
+			$modifier->replaceSuggestions($objectives);
+			ilUtil::sendSuccess('Die Lernziel Empfehlungen wurden angepasst', true);
+			$this->ctrl->redirect($this);
 		}
 		$form->setValuesByPost();
 		$this->tpl->setContent($form->getHTML());
@@ -181,18 +171,32 @@ class alouiCourseGUI {
 		$this->tpl->setTitle($this->course->getPresentationTitle());
 		$this->tpl->setDescription($this->course->getLongDescription());
 		$this->tpl->setTitleIcon(ilObject::_getIcon("", "big", $this->course->getType()), $this->lng->txt("obj_" . $this->course->getType()));
-		$this->ctrl->setParameterByClass('ilrepositorygui', 'ref_id', (int) $_GET['ref_id']);
+		$this->ctrl->setParameterByClass('ilrepositorygui', 'ref_id', (int)$_GET['ref_id']);
 		$this->tabs->setBackTarget('Zurück zum Kurs', $this->ctrl->getLinkTargetByClass(array('ilrepositorygui', 'ilobjcoursegui')));
 		include_once './Services/Object/classes/class.ilObjectListGUIFactory.php';
 		$lgui = ilObjectListGUIFactory::_getListGUIByType($this->course->getType());
-		$lgui->initItem((int) $_GET['ref_id'], $this->course->getId());
+		$lgui->initItem((int)$_GET['ref_id'], $this->course->getId());
 		$this->tpl->setAlertProperties($lgui->getAlertProperties());
 		$ilLocator->addRepositoryItems();
 		$this->tpl->setLocator();
 	}
 
+	/**
+	 * @param int $user_id
+	 * @return ActiveRecord|Notification
+	 */
+	protected function getNotification($user_id) {
+		return Notification::where(array(
+			'user_id' => $user_id,
+			'course_obj_id' => $this->course->getId()
+		))->first();
+	}
+
+	/**
+	 * @return bool
+	 */
 	protected function checkAccess() {
-		return true;
+		return $this->access->checkAccess('write', '', (int)$_GET['ref_id']);
 	}
 
 }
