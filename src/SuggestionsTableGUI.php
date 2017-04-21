@@ -10,6 +10,9 @@ require_once('./Services/Table/classes/class.ilTable2GUI.php');
 require_once('./Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php');
 require_once('./Services/Form/classes/class.ilTextInputGUI.php');
 require_once('./Services/Form/classes/class.ilCheckboxInputGUI.php');
+require_once('./Services/Form/classes/class.ilSelectInputGUI.php');
+require_once('./Modules/OrgUnit/classes/class.ilObjOrgUnit.php');
+
 
 /**
  * Class LearningObjectiveSuggestionsTableGUI
@@ -97,6 +100,55 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->addFilterItemWithValue($item);
 		$item = new \ilCheckboxInputGUI('Benachrichtigung verschickt', 'notification_sent');
 		$this->addFilterItemWithValue($item);
+		$item = new \ilSelectInputGUI('Mitglied in Gruppe', 'group_id');
+		$item->setOptions($this->getGroups());
+		$this->addFilterItemWithValue($item);
+		$item = new \ilSelectInputGUI('In Organisationseinheit', 'orgu_ref_id');
+		$item->setOptions($this->getOrgUnits());
+		$this->addFilterItemWithValue($item);
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getOrgUnits() {
+		return array('' => '') + $this->getOrgUnitsRecursive(\ilObjOrgUnit::getRootOrgRefId(), 0);
+	}
+
+	/**
+	 * @param array $ref_id
+	 * @param int $level
+	 * @return array
+	 */
+	private function getOrgUnitsRecursive($ref_id, $level) {
+		global $tree;
+		$orgus = array();
+		$nodes = $tree->getChildsByType($ref_id, 'orgu');
+		foreach ($nodes as $node) {
+			$orgus[$node['ref_id']] = str_repeat("&nbsp;", $level*3) . $node['title'];
+			$children = $this->getOrgUnitsRecursive($node['ref_id'], $level+1);
+			if (count($children)) {
+				$orgus += $children;
+			}
+		}
+		return $orgus;
+	}
+
+	/**
+	 * @return array
+	 */
+	protected function getGroups() {
+		global $tree;
+		$groups = array('' => '');
+		$parent_node = $tree->getNodeData($this->course->getRefId());
+		$nodes = $tree->getSubTree($parent_node, true, 'grp');
+		foreach ($nodes as $node) {
+			if ($node['deleted']) {
+				continue;
+			}
+			$groups[$node['obj_id']] = $node['title'];
+		}
+		return $groups;
 	}
 
 	/**

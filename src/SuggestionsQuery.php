@@ -1,5 +1,9 @@
 <?php namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
+
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
+
+require_once('./Modules/Group/classes/class.ilGroupParticipants.php');
+require_once('./Modules/OrgUnit/classes/class.ilObjOrgUnitTree.php');
 
 /**
  * Class LearningObjectiveSuggestionsQuery
@@ -132,6 +136,17 @@ class SuggestionsQuery {
 					break;
 				case 'notification_sent':
 					$sql .= " AND alo_notification.sent_at IS NOT NULL ";
+					break;
+				case 'group_id':
+					/** @var \ilGroupParticipants $participants */
+					$participants = \ilGroupParticipants::_getInstanceByObjId((int) $value);
+					$user_ids = $participants->getParticipants();
+					$sql .= (count($user_ids)) ? " AND usr_data.usr_id IN (" . implode(',', $user_ids) . ") " : " AND FALSE ";
+					break;
+				case 'orgu_ref_id':
+					$tree = \ilObjOrgUnitTree::_getInstance();
+					$user_ids = array_unique($tree->getSuperiors((int) $value) + $tree->getEmployees((int) $value));
+					$sql .= (count($user_ids)) ? " AND usr_data.usr_id IN (" . implode(',', $user_ids) . ") " : " AND FALSE ";
 					break;
 			}
 		}
