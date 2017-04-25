@@ -126,6 +126,10 @@ class SuggestionsQuery {
 					alo_notification.user_id = alo_suggestion.user_id
 					)
 				WHERE alo_suggestion.course_obj_id = ' . $this->db->quote($this->course->getId(), 'integer');
+		$member_ids = $this->course->getMemberIds();
+		if (count($member_ids)) {
+			$sql .= ' AND alo_suggestion.user_id IN (' . implode(',', $member_ids) . ') ';
+		}
 		foreach ($this->filters as $key => $value) {
 			switch ($key) {
 				case 'email':
@@ -150,7 +154,6 @@ class SuggestionsQuery {
 					break;
 			}
 		}
-
 		$sql .= ' GROUP BY user_id, usr_data.firstname, usr_data.lastname, usr_data.login, usr_data.email, notification_sent_at';
 		if (!$count) {
 			$sql .= ' ORDER BY ';

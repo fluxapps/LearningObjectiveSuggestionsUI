@@ -72,13 +72,13 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$placeholders = new Placeholders();
 		$item = new \ilTextInputGUI('Betreff', 'subject');
 		$item->setRequired(true);
-		$subject = $this->parser->parse($this->config->get('email_subject'), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
+		$subject = $this->parser->parse($this->config->getEmailSubjectTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
 		$item->setValue($subject);
 		$this->addItem($item);
 
 		$item = new \ilTextAreaInputGUI('Inhalt', 'body');
 		$item->setRequired(true);
-		$body = $this->parser->parse($this->config->get('email_body'), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
+		$body = $this->parser->parse($this->config->getEmailBodyTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
 		$item->setValue($body);
 		$item->setRows(10);
 		$this->addItem($item);
