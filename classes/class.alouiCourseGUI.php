@@ -3,6 +3,7 @@
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\CourseConfigProvider;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveQuery;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Log\Log;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Log\ModificationLog;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\InternalMail;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\Notification;
@@ -104,7 +105,7 @@ class alouiCourseGUI {
 		$form = new SuggestionsSendFormGUI(new LearningObjectiveCourse($this->course), $user, new TwigParser());
 		$form->setFormAction($this->ctrl->getFormAction($this));
 		$this->tpl->setContent($form->getHTML());
-		if ($this->getNotification($user)) {
+		if ($this->getNotification($user->getId())) {
 			ilUtil::sendInfo("Die Lernziel Empfehlungen wurden bereits an diesen Benutzer versendet.");
 		}
 	}
@@ -116,13 +117,14 @@ class alouiCourseGUI {
 		$form = new SuggestionsSendFormGUI($course, $user, new TwigParser());
 		$form->setFormAction($this->ctrl->getFormAction($this));
 		if ($form->checkInput()) {
-			$sender = new Sender($course, $user);
+			$sender = new Sender($course, $user, new Log());
 			$sender->subject($form->getInput('subject'))
 				->body($form->getInput('body'));
 			if ($sender->send()) {
 				ilUtil::sendSuccess('Die Lernziel Empfehlungen wurden an den Benutzer und Betreuer verschickt', true);
 				$this->ctrl->redirect($this);
 			}
+			ilUtil::sendFailure('Die Lernziel Empfehlungen konnten nicht verschickt werden');
 		}
 		$form->setValuesByPost();
 		$this->tpl->setContent($form->getHTML());
