@@ -6,15 +6,12 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningOb
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveQuery;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\Parser;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\Placeholders;
-use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Notification\TwigParser;
-use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Score\LearningObjectiveScore;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjectiveSuggestion;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
 
-require_once('./Services/Form/classes/class.ilPropertyFormGUI.php');
-
 /**
  * Class LearningObjectiveSuggestionsSendFormGUI
+ *
  * @author Stefan Wanzenried <sw@studer-raimann.ch>
  */
 class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
@@ -23,7 +20,6 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 	 * @var LearningObjectiveCourse
 	 */
 	protected $course;
-
 	/**
 	 * @var User
 	 */
@@ -32,21 +28,24 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 	 * @var LearningObjectiveQuery
 	 */
 	private $learning_objective_query;
-
 	/**
 	 * @var CourseConfigProvider
 	 */
 	protected $config;
-
 	/**
 	 * @var Parser
 	 */
 	protected $parser;
+	/**
+	 * @var \ilLearningObjectiveSuggestionsUIPlugin
+	 */
+	protected $pl;
+
 
 	/**
 	 * @param LearningObjectiveCourse $course
-	 * @param User $user
-	 * @param Parser $parser
+	 * @param User                    $user
+	 * @param Parser                  $parser
 	 */
 	public function __construct(LearningObjectiveCourse $course, User $user, Parser $parser) {
 		parent::__construct();
@@ -55,8 +54,10 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$this->config = new CourseConfigProvider($course);
 		$this->learning_objective_query = new LearningObjectiveQuery($this->config);
 		$this->parser = $parser;
+		$this->pl = \ilLearningObjectiveSuggestionsUIPlugin::getInstance();
 		$this->init();
 	}
+
 
 	protected function init() {
 		$this->setTitle($this->user->getFirstname() . ' ' . $this->user->getLastname() . ' benachrichtigen');
@@ -70,22 +71,23 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$this->addItem($item);
 
 		$placeholders = new Placeholders();
-		$item = new \ilTextInputGUI('Betreff', 'subject');
+		$item = new \ilTextInputGUI($this->pl->txt("subject"), 'subject');
 		$item->setRequired(true);
 		$subject = $this->parser->parse($this->config->getEmailSubjectTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
 		$item->setValue($subject);
 		$this->addItem($item);
 
-		$item = new \ilTextAreaInputGUI('Inhalt', 'body');
+		$item = new \ilTextAreaInputGUI($this->pl->txt("body"), 'body');
 		$item->setRequired(true);
 		$body = $this->parser->parse($this->config->getEmailBodyTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
 		$item->setValue($body);
 		$item->setRows(10);
 		$this->addItem($item);
 
-		$this->addCommandButton('sendNotification', 'Absenden');
-		$this->addCommandButton('cancel', 'Abbrechen');
+		$this->addCommandButton(\alouiCourseGUI::CMD_SEND_NOTIFICATION, $this->pl->txt("send"));
+		$this->addCommandButton(\alouiCourseGUI::CMD_CANCEL, $this->pl->txt("cancel"));
 	}
+
 
 	/**
 	 * @return LearningObjective[]
@@ -99,6 +101,7 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		foreach ($suggestions as $suggestion) {
 			$objectives[] = $this->learning_objective_query->getByObjectiveId($suggestion->getObjectiveId());
 		}
+
 		return $objectives;
 	}
 }

@@ -1,5 +1,24 @@
 {
   "autoload": {
-    "psr-4": {"SRAG\\ILIAS\\Plugins\\LearningObjectiveSuggestionsUI\\": "src/"}
+    "psr-4": {
+      "SRAG\\ILIAS\\Plugins\\LearningObjectiveSuggestionsUI\\": "src/"
+    },
+    "classmap": [
+      "./classes/",
+      "../../../../../../../Modules/Course/classes/class.ilObjCourse.php",
+      "../../../../../../../Modules/Group/classes/class.ilGroupParticipants.php",
+      "../../../../../../../Modules/OrgUnit/classes/class.ilObjOrgUnit.php",
+      "../../../../../../../Modules/OrgUnit/classes/class.ilObjOrgUnitTree.php",
+      "../../../../../../../Services/AccessControl/classes/class.ilObjRole.php",
+      "../../../../../../../Services/Form/classes/class.ilCheckboxInputGUI.php",
+      "../../../../../../../Services/Form/classes/class.ilPropertyFormGUI.php",
+      "../../../../../../../Services/Form/classes/class.ilSelectInputGUI.php",
+      "../../../../../../../Services/Form/classes/class.ilTextInputGUI.php",
+      "../../../../../../../Services/Object/classes/class.ilObjectListGUIFactory.php",
+      "../../../../../../../Services/Table/classes/class.ilTable2GUI.php",
+      "../../../../../../../Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php",
+      "../../../../../../../Services/UIComponent/classes/class.ilUIHookPluginGUI.php",
+      "../../../../../../../Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php"
+    ]
   }
 }
