@@ -1,8 +1,8 @@
 <?php
 
-use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\ConfigProvider;
-
 require_once __DIR__ . "/../vendor/autoload.php";
+
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\ConfigProvider;
 
 /**
  * Class ilLearningObjectiveSuggestionsUIUIHookGUI
