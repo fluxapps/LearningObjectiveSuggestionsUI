@@ -35,6 +35,9 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
 	protected $ilPluginAdmin;
 
 
+	/**
+	 *
+	 */
 	public function __construct() {
 		parent::__construct();
 
@@ -44,6 +47,9 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
 	}
 
 
+	/**
+	 *
+	 */
 	protected function init() {
 		parent::init();
 		require_once __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php";
@@ -52,11 +58,17 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
 	}
 
 
+	/**
+	 * @return bool
+	 */
 	protected function beforeActivation() {
 		return $this->beforeUpdate();
 	}
 
 
+	/**
+	 * @return bool
+	 */
 	protected function beforeUpdate() {
 		if (!is_file(__DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/classes/class.ilLearningObjectiveSuggestionsPlugin.php")) {
 			// Note: if we throw an ilPluginException the message of the exception is not displayed --> it's useless
@@ -64,6 +76,7 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
 
 			return false;
 		}
+
 		/*require_once __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php";
 		if (!$this->ilPluginAdmin->isActive('Services', 'Cron', 'crnhk', ilLearningObjectiveSuggestionsPlugin::PLUGIN_NAME)) {
 			ilUtil::sendFailure("Plugin LearningObjectiveSuggestions must be active", true);
