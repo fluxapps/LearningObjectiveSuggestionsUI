@@ -73,6 +73,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			'email' => array( 'txt' => 'email', 'default' => false ),
 			'suggestions' => array( 'txt' => 'suggestions', 'default' => true ),
 			'notification_sent_at' => array( 'txt' => 'notified_on', 'default' => true ),
+			'is_cron_active' => array( 'txt' => 'cron', 'default' => true )
 		);
 	}
 
@@ -215,6 +216,17 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->ctrl->setParameter($this->parent_obj, 'user_id', $a_set['user_id']);
 		$list->addItem($this->pl->txt('edit_suggestions'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_EDIT_SUGGESTIONS));
 		$list->addItem($this->pl->txt('send_suggestions'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_EDIT_SEND_NOTIFICATION));
+
+		switch($a_set['is_cron_active']) {
+			case 1:
+				$list->addItem($this->pl->txt('deactivate_cron'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_DEACTIVATE_CRON));
+				break;
+			default:
+				$list->addItem($this->pl->txt('activate_cron'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_ACTIVATE_CRON));
+				break;
+		}
+
+
 		$this->ctrl->clearParameters($this->parent_obj);
 		$list->setListTitle($this->pl->txt('actions'));
 		$this->tpl->setCurrentBlock('td');
@@ -224,6 +236,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 
 
 	protected function getFormattedValue($column, $a_set) {
+		global $DIC;
+
 		$value = $a_set[$column];
 		switch ($column) {
 			case 'suggestions':
@@ -234,6 +248,12 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				return implode('<br>', $objectives);
 			case 'notification_sent_at':
 				return ($value) ? date('d.m.Y, H:i:s', strtotime($value)) : '&nbsp;';
+			case 'is_cron_active':
+				$factory = $DIC->ui()->factory();
+				if($value == 1) {
+					return $renderer = $DIC->ui()->renderer()->render($factory->image()->standard($this->pl->getImagePath("on.svg"), ''));
+				}
+				return $renderer = $DIC->ui()->renderer()->render($factory->image()->standard($this->pl->getImagePath("off.svg"), ''));
 			default:
 				return ($value) ? $value : '&nbsp;';
 		}

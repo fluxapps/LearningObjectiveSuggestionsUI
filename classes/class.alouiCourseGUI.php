@@ -14,6 +14,7 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsFormGUI;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsSendFormGUI;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsTableGUI;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjectiveSuggestions;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
@@ -34,6 +35,8 @@ class alouiCourseGUI {
 	const CMD_RESET_FILTER = 'resetFilter';
 	const CMD_SAVE_SUGGESTIONS = "saveSuggestions";
 	const CMD_SEND_NOTIFICATION = 'sendNotification';
+	const CMD_DEACTIVATE_CRON = "deactivateCron";
+	const CMD_ACTIVATE_CRON = "activateCron";
 	/**
 	 * @var ilCtrl
 	 */
@@ -184,6 +187,33 @@ class alouiCourseGUI {
 		$form = new SuggestionsFormGUI($course, $user, $query);
 		$form->setFormAction($this->ctrl->getFormAction($this));
 		$this->tpl->setContent($form->getHTML());
+	}
+
+
+	protected function activateCron() {
+		$this->ctrl->saveParameter($this, 'user_id');
+		$user = new User(new ilObjUser((int)$_GET['user_id']));
+		$course = new LearningObjectiveCourse($this->course);
+
+		$learning_objective_suggestions = new LearningObjectiveSuggestions($course,$user);
+		$learning_objective_suggestions->setCronActive();
+
+		ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+		$this->ctrl->redirect($this);
+
+	}
+
+
+	protected function deactivateCron() {
+		$this->ctrl->saveParameter($this, 'user_id');
+		$user = new User(new ilObjUser((int)$_GET['user_id']));
+		$course = new LearningObjectiveCourse($this->course);
+
+		$learning_objective_suggestions = new LearningObjectiveSuggestions($course,$user);
+		$learning_objective_suggestions->setCronInactive();
+
+		ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+		$this->ctrl->redirect($this);
 	}
 
 

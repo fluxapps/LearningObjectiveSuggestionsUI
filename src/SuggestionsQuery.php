@@ -129,7 +129,8 @@ class SuggestionsQuery {
 				usr_data.login,
 				usr_data.email,
 				NULL as suggestions,
-				' . Notification::TABLE_NAME . '.sent_at AS notification_sent_at
+				' . Notification::TABLE_NAME . '.sent_at AS notification_sent_at,
+				is_cron_active
 				FROM ' . LearningObjectiveSuggestion::TABLE_NAME . '
 				INNER JOIN usr_data ON (usr_data.usr_id = '
 			. LearningObjectiveSuggestion::TABLE_NAME . '.user_id)

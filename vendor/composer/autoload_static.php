@@ -20,11 +20,32 @@ class ComposerStaticInit2c7ec283942aa90871a23f4af2333c37
         ),
     );
 
+    public static $classMap = array (
+        'alouiCourseGUI' => __DIR__ . '/../..' . '/classes/class.alouiCourseGUI.php',
+        'ilAdvancedSelectionListGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php',
+        'ilCheckboxInputGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Form/classes/class.ilCheckboxInputGUI.php',
+        'ilGroupParticipants' => __DIR__ . '/../..' . '/../../../../../../../Modules/Group/classes/class.ilGroupParticipants.php',
+        'ilLearningObjectiveSuggestionsUIPlugin' => __DIR__ . '/../..' . '/classes/class.ilLearningObjectiveSuggestionsUIPlugin.php',
+        'ilLearningObjectiveSuggestionsUIUIHookGUI' => __DIR__ . '/../..' . '/classes/class.ilLearningObjectiveSuggestionsUIUIHookGUI.php',
+        'ilObjCourse' => __DIR__ . '/../..' . '/../../../../../../../Modules/Course/classes/class.ilObjCourse.php',
+        'ilObjOrgUnit' => __DIR__ . '/../..' . '/../../../../../../../Modules/OrgUnit/classes/class.ilObjOrgUnit.php',
+        'ilObjOrgUnitTree' => __DIR__ . '/../..' . '/../../../../../../../Modules/OrgUnit/classes/class.ilObjOrgUnitTree.php',
+        'ilObjRole' => __DIR__ . '/../..' . '/../../../../../../../Services/AccessControl/classes/class.ilObjRole.php',
+        'ilObjectListGUIFactory' => __DIR__ . '/../..' . '/../../../../../../../Services/Object/classes/class.ilObjectListGUIFactory.php',
+        'ilPropertyFormGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Form/classes/class.ilPropertyFormGUI.php',
+        'ilSelectInputGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Form/classes/class.ilSelectInputGUI.php',
+        'ilTable2GUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Table/classes/class.ilTable2GUI.php',
+        'ilTextInputGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Form/classes/class.ilTextInputGUI.php',
+        'ilUIHookPluginGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/UIComponent/classes/class.ilUIHookPluginGUI.php',
+        'ilUserInterfaceHookPlugin' => __DIR__ . '/../..' . '/../../../../../../../Services/UIComponent/classes/class.ilUserInterfaceHookPlugin.php',
+    );
+
     public static function getInitializer(ClassLoader $loader)
     {
         return \Closure::bind(function () use ($loader) {
             $loader->prefixLengthsPsr4 = ComposerStaticInit2c7ec283942aa90871a23f4af2333c37::$prefixLengthsPsr4;
             $loader->prefixDirsPsr4 = ComposerStaticInit2c7ec283942aa90871a23f4af2333c37::$prefixDirsPsr4;
+            $loader->classMap = ComposerStaticInit2c7ec283942aa90871a23f4af2333c37::$classMap;
 
         }, null, ClassLoader::class);
     }

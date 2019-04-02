@@ -24,3 +24,6 @@ suggested_info#:#Bearbeiten Sie die Empfehlungen durch Hinzufügen/Entfernen von
 suggestions#:#Lernziel Empfehlungen
 suggestions_already_sent#:#Die Lernziel Empfehlungen wurden bereits an diesen Benutzer versendet.
 suggestions_sent#:#Die Lernziel Empfehlungen wurden an den Benutzer und Betreuer verschickt
+cron#:#Cron
+deactivate_cron#:#Cron deaktivieren
+activate_cron#:#Cron aktivieren

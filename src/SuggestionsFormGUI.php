@@ -1,4 +1,5 @@
-<?php namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
+<?php
+namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
 
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveQuery;
