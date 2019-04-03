@@ -1,5 +1,6 @@
 <?php namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
 
+use ilExcel;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\CourseConfigProvider;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjective;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
@@ -59,6 +60,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->setTitle($this->pl->txt("suggestions"));
 		$this->addColumns();
 		$this->initFilter();
+		$this->setExportFormats([ self::EXPORT_EXCEL ]);
 	}
 
 
@@ -194,7 +196,9 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				$this->addColumn($this->pl->txt($data['txt']), $sort);
 			}
 		}
-		$this->addColumn($this->pl->txt('actions'));
+		if(!$this->export_mode) {
+			$this->addColumn($this->pl->txt('actions'));
+		}
 	}
 
 
@@ -217,7 +221,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$list->addItem($this->pl->txt('edit_suggestions'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_EDIT_SUGGESTIONS));
 		$list->addItem($this->pl->txt('send_suggestions'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_EDIT_SEND_NOTIFICATION));
 
-		switch($a_set['is_cron_active']) {
+		switch ($a_set['is_cron_active']) {
 			case 1:
 				$list->addItem($this->pl->txt('deactivate_cron'), '', $this->ctrl->getLinkTarget($this->parent_obj, \alouiCourseGUI::CMD_DEACTIVATE_CRON));
 				break;
@@ -226,7 +230,6 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				break;
 		}
 
-
 		$this->ctrl->clearParameters($this->parent_obj);
 		$list->setListTitle($this->pl->txt('actions'));
 		$this->tpl->setCurrentBlock('td');
@@ -234,6 +237,24 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->tpl->parseCurrentBlock();
 	}
 
+
+	/**
+	 * @param ilExcel $a_excel
+	 * @param int     $a_row
+	 * @param array   $a_set
+	 */
+	protected function fillRowExcel(ilExcel $a_excel, &$a_row, $a_set) {
+		$col = 0;
+		foreach (array_keys($this->getSelectableColumns()) as $column) {
+
+			if (!$this->isColumnSelected($column)) {
+				continue;
+			}
+
+			$a_excel->setCell($a_row, $col, $this->getFormatedValueExcel($column, $a_set));
+			$col = $col + 1;
+		}
+	}
 
 	protected function getFormattedValue($column, $a_set) {
 		global $DIC;
@@ -250,12 +271,30 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				return ($value) ? date('d.m.Y, H:i:s', strtotime($value)) : '&nbsp;';
 			case 'is_cron_active':
 				$factory = $DIC->ui()->factory();
-				if($value == 1) {
+				if ($value == 1) {
 					return $renderer = $DIC->ui()->renderer()->render($factory->image()->standard($this->pl->getImagePath("on.svg"), ''));
 				}
+
 				return $renderer = $DIC->ui()->renderer()->render($factory->image()->standard($this->pl->getImagePath("off.svg"), ''));
 			default:
 				return ($value) ? $value : '&nbsp;';
+		}
+	}
+
+
+	protected function getFormatedValueExcel($column, $a_set) {
+		$value = $a_set[$column];
+		switch ($column) {
+			case 'suggestions':
+				$objectives = array_map(function ($objective) {
+					return $objective->getTitle();
+				}, $this->getSuggestedLearningObjectives($a_set['user_id']));
+				$lfcr = chr(10);
+				return implode($lfcr, $objectives);
+			case 'notification_sent_at':
+				return ($value) ? date('d.m.Y, H:i:s', strtotime($value)) : ' ';
+			default:
+				return ($value) ? $value : ' ';
 		}
 	}
 
