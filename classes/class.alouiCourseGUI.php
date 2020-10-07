@@ -85,21 +85,21 @@ class alouiCourseGUI {
 		$this->usr = $DIC->user();
 		$this->locator = $DIC["ilLocator"];
 		$this->pl = ilLearningObjectiveSuggestionsUIPlugin::getInstance();
-		$this->tpl->getStandardTemplate();
+		$this->tpl->loadStandardTemplate();
 	}
 
 
 	public function executeCommand() {
 		if (!$this->checkAccess()) {
 			ilUtil::sendFailure($this->lng->txt('permission_denied'), true);
-			$this->ctrl->redirectByClass(ilPersonalDesktopGUI::class);
+			$this->ctrl->redirectByClass(ilDashboardGUI::class);
 		}
 		$this->course = new ilObjCourse((int)$_GET['ref_id']);
 		$this->initCourseHeader();
 		$cmd = $this->ctrl->getCmd(self::CMD_INDEX);
 		$this->ctrl->saveParameter($this, 'ref_id');
 		$this->$cmd();
-		$this->tpl->show();
+		$this->tpl->printToStdout();
 	}
 
 
@@ -235,7 +235,7 @@ class alouiCourseGUI {
 			ilObjCourseGUI::class
 		)));
 		$lgui = ilObjectListGUIFactory::_getListGUIByType($this->course->getType());
-		$lgui->initItem((int)$_GET['ref_id'], $this->course->getId());
+		$lgui->initItem((int)$_GET['ref_id'], $this->course->getId(), false);
 		$this->tpl->setAlertProperties($lgui->getAlertProperties());
 		$this->locator->addRepositoryItems();
 		$this->tpl->setLocator();
