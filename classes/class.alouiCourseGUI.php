@@ -85,7 +85,11 @@ class alouiCourseGUI {
 		$this->usr = $DIC->user();
 		$this->locator = $DIC["ilLocator"];
 		$this->pl = ilLearningObjectiveSuggestionsUIPlugin::getInstance();
-		$this->tpl->loadStandardTemplate();
+		if(method_exists($this->tpl,'loadStandardTemplate')) {
+            $this->tpl->loadStandardTemplate();
+        } else {
+$this->tpl->getStandardTemplate();
+}
 	}
 
 
@@ -99,7 +103,12 @@ class alouiCourseGUI {
 		$cmd = $this->ctrl->getCmd(self::CMD_INDEX);
 		$this->ctrl->saveParameter($this, 'ref_id');
 		$this->$cmd();
-		$this->tpl->printToStdout();
+		if(method_exists($this->tpl, 'printToStdout'))
+{
+$this->tpl->printToStdout();
+ } else {
+$this->tpl->show();
+ }
 	}
 
 
