@@ -14,6 +14,7 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsFormGUI;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsSendFormGUI;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI\SuggestionsTableGUI;
+use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjectiveSuggestions;
 
 require_once __DIR__ . "/../vendor/autoload.php";
 
@@ -34,6 +35,8 @@ class alouiCourseGUI {
 	const CMD_RESET_FILTER = 'resetFilter';
 	const CMD_SAVE_SUGGESTIONS = "saveSuggestions";
 	const CMD_SEND_NOTIFICATION = 'sendNotification';
+	const CMD_DEACTIVATE_CRON = "deactivateCron";
+	const CMD_ACTIVATE_CRON = "activateCron";
 	/**
 	 * @var ilCtrl
 	 */
@@ -82,21 +85,30 @@ class alouiCourseGUI {
 		$this->usr = $DIC->user();
 		$this->locator = $DIC["ilLocator"];
 		$this->pl = ilLearningObjectiveSuggestionsUIPlugin::getInstance();
-		$this->tpl->getStandardTemplate();
+		if(method_exists($this->tpl,'loadStandardTemplate')) {
+            $this->tpl->loadStandardTemplate();
+        } else {
+$this->tpl->getStandardTemplate();
+}
 	}
 
 
 	public function executeCommand() {
 		if (!$this->checkAccess()) {
 			ilUtil::sendFailure($this->lng->txt('permission_denied'), true);
-			$this->ctrl->redirectByClass(ilPersonalDesktopGUI::class);
+			$this->ctrl->redirectByClass(ilDashboardGUI::class);
 		}
 		$this->course = new ilObjCourse((int)$_GET['ref_id']);
 		$this->initCourseHeader();
 		$cmd = $this->ctrl->getCmd(self::CMD_INDEX);
 		$this->ctrl->saveParameter($this, 'ref_id');
 		$this->$cmd();
-		$this->tpl->show();
+		if(method_exists($this->tpl, 'printToStdout'))
+{
+$this->tpl->printToStdout();
+ } else {
+$this->tpl->show();
+ }
 	}
 
 
@@ -187,6 +199,33 @@ class alouiCourseGUI {
 	}
 
 
+	protected function activateCron() {
+		$this->ctrl->saveParameter($this, 'user_id');
+		$user = new User(new ilObjUser((int)$_GET['user_id']));
+		$course = new LearningObjectiveCourse($this->course);
+
+		$learning_objective_suggestions = new LearningObjectiveSuggestions($course,$user);
+		$learning_objective_suggestions->setCronActive();
+
+		ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+		$this->ctrl->redirect($this);
+
+	}
+
+
+	protected function deactivateCron() {
+		$this->ctrl->saveParameter($this, 'user_id');
+		$user = new User(new ilObjUser((int)$_GET['user_id']));
+		$course = new LearningObjectiveCourse($this->course);
+
+		$learning_objective_suggestions = new LearningObjectiveSuggestions($course,$user);
+		$learning_objective_suggestions->setCronInactive();
+
+		ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+		$this->ctrl->redirect($this);
+	}
+
+
 	protected function cancel() {
 		$this->index();
 	}
@@ -205,7 +244,7 @@ class alouiCourseGUI {
 			ilObjCourseGUI::class
 		)));
 		$lgui = ilObjectListGUIFactory::_getListGUIByType($this->course->getType());
-		$lgui->initItem((int)$_GET['ref_id'], $this->course->getId());
+		$lgui->initItem((int)$_GET['ref_id'], $this->course->getId(), false);
 		$this->tpl->setAlertProperties($lgui->getAlertProperties());
 		$this->locator->addRepositoryItems();
 		$this->tpl->setLocator();
