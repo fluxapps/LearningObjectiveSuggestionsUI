@@ -21,6 +21,7 @@ class ComposerStaticInit2c7ec283942aa90871a23f4af2333c37
     );
 
     public static $classMap = array (
+        'Composer\\InstalledVersions' => __DIR__ . '/..' . '/composer/InstalledVersions.php',
         'alouiCourseGUI' => __DIR__ . '/../..' . '/classes/class.alouiCourseGUI.php',
         'ilAdvancedSelectionListGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php',
         'ilCheckboxInputGUI' => __DIR__ . '/../..' . '/../../../../../../../Services/Form/classes/class.ilCheckboxInputGUI.php',

@@ -6,6 +6,7 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
+    'Composer\\InstalledVersions' => $vendorDir . '/composer/InstalledVersions.php',
     'alouiCourseGUI' => $baseDir . '/classes/class.alouiCourseGUI.php',
     'ilAdvancedSelectionListGUI' => $baseDir . '/../../../../../../../Services/UIComponent/AdvancedSelectionList/classes/class.ilAdvancedSelectionListGUI.php',
     'ilCheckboxInputGUI' => $baseDir . '/../../../../../../../Services/Form/classes/class.ilCheckboxInputGUI.php',
