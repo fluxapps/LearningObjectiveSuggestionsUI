@@ -58,7 +58,9 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
     {
 		if (!is_file(__DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/classes/class.ilLearningObjectiveSuggestionsPlugin.php")) {
 			// Note: if we throw an ilPluginException the message of the exception is not displayed --> it's useless
-			ilUtil::sendFailure("Plugin LearningObjectiveSuggestions must be installed", true);
+            global $DIC;
+            $tpl = $DIC["tpl"];
+            $tpl->setOnScreenMessage('failure',"Plugin LearningObjectiveSuggestions must be installed", true);
 			return false;
 		}
 		return true;

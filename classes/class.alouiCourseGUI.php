@@ -69,7 +69,7 @@ class alouiCourseGUI
     public function executeCommand(): void
     {
         if (!$this->checkAccess()) {
-            ilUtil::sendFailure($this->lng->txt('permission_denied'), true);
+            $this->tpl->setOnScreenMessage('failure',$this->pl->txt('permission_denied'), true);
             $this->ctrl->redirectByClass(ilDashboardGUI::class);
         }
         $this->course = new ilObjCourse((int)$_GET['ref_id']);
@@ -111,7 +111,7 @@ class alouiCourseGUI
         $form->setFormAction($this->ctrl->getFormAction($this));
         $this->tpl->setContent($form->getHTML());
         if ($this->getNotification($user->getId())) {
-            ilUtil::sendInfo($this->pl->txt("suggestions_already_sent"));
+            $this->tpl->setOnScreenMessage('info',$this->pl->txt('suggestions_already_sent'), true);
         }
     }
     protected function sendNotification(): void
@@ -125,10 +125,10 @@ class alouiCourseGUI
             $sender = new Sender($course, $user, new Log());
             $sender->subject($form->getInput('subject'))->body($form->getInput('body'));
             if ($sender->send()) {
-                ilUtil::sendSuccess($this->pl->txt("suggestions_sent"), true);
+                $this->tpl->setOnScreenMessage('success',$this->pl->txt('suggestions_sent'), true);
                 $this->ctrl->redirect($this);
             }
-            ilUtil::sendFailure($this->pl->txt('send_suggestions_failed'));
+            $this->tpl->setOnScreenMessage('failure',$this->pl->txt('send_suggestions_failed'), true);
         }
         $form->setValuesByPost();
         $this->tpl->setContent($form->getHTML());
@@ -147,7 +147,7 @@ class alouiCourseGUI
                 return $query->getByObjectiveId($objective_id);
             }, $form->getInput('suggestions'));
             $modifier->replaceSuggestions($objectives);
-            ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+            $this->tpl->setOnScreenMessage('success',$this->pl->txt('saved_suggestions'), true);
             $this->ctrl->redirect($this);
         }
         $form->setValuesByPost();
@@ -171,8 +171,7 @@ class alouiCourseGUI
 
         $learning_objective_suggestions = new LearningObjectiveSuggestions($course, $user);
         $learning_objective_suggestions->setCronActive();
-
-        ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+        $this->tpl->setOnScreenMessage('success',$this->pl->txt('saved_suggestions'), true);
         $this->ctrl->redirect($this);
 
     }
@@ -184,8 +183,7 @@ class alouiCourseGUI
 
         $learning_objective_suggestions = new LearningObjectiveSuggestions($course, $user);
         $learning_objective_suggestions->setCronInactive();
-
-        ilUtil::sendSuccess($this->pl->txt('saved_suggestions'), true);
+        $this->tpl->setOnScreenMessage('success',$this->pl->txt('saved_suggestions'), true);
         $this->ctrl->redirect($this);
     }
     protected function cancel(): void
