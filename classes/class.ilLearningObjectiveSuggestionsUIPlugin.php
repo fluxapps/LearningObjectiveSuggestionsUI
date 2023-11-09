@@ -11,95 +11,64 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
 
 	const PLUGIN_ID = "dhbwautoloui";
 	const PLUGIN_NAME = "LearningObjectiveSuggestionsUI";
-	/**
-	 * @var ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	protected static $instance;
-
-
-	/**
-	 * @return ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	public static function getInstance() {
-		if (self::$instance === NULL) {
-			self::$instance = new self();
-		}
+	protected static ?ilLearningObjectiveSuggestionsUIPlugin $instance = null;
+	public static function getInstance(): ilLearningObjectiveSuggestionsUIPlugin
+    {
+        if (!isset(self::$instance)) {
+            global $DIC;
+            /** @var $component_factory ilComponentFactory */
+            $component_factory = $DIC['component.factory'];
+            /** @var $plugin ilLearningObjectiveSuggestionsUIPlugin */
+            $plugin  = $component_factory->getPlugin(ilLearningObjectiveSuggestionsUIPlugin::PLUGIN_ID);
+            self::$instance = $plugin;
+        }
 
 		return self::$instance;
 	}
+	protected ilPluginAdmin $ilPluginAdmin;
 
-
-	/**
-	 * @var ilPluginAdmin
-	 */
-	protected $ilPluginAdmin;
-
-
-	/**
-	 *
-	 */
-	public function __construct() {
-		parent::__construct();
-
-		global $DIC;
-
+    public function __construct(
+        ilDBInterface $db,
+        ilComponentRepositoryWrite $component_repository,
+        string $id
+    ) {
+        global $DIC;
+        parent::__construct($db, $component_repository, $id);
 		$this->ilPluginAdmin = $DIC["ilPluginAdmin"];
 	}
-
-
-	/**
-	 *
-	 */
-	protected function init() {
+	protected function init(): void
+    {
 		parent::init();
-		require_once __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php";
-		require_once __DIR__ . "/../../../../EventHandling/EventHook/UserDefaults/vendor/autoload.php";
-		require_once __DIR__ . "/../../../../UIComponent/UserInterfaceHook/ParticipationCertificate/vendor/autoload.php";
+        if(file_exists( __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php")) {
+            require_once __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php";
+        }
+        if(file_exists(__DIR__ . "/../../../../EventHandling/EventHook/UserDefaults/vendor/autoload.php")) {
+            require_once __DIR__ . "/../../../../EventHandling/EventHook/UserDefaults/vendor/autoload.php";
+
+        }
+        if(file_exists( __DIR__ . "/../../../../UIComponent/UserInterfaceHook/ParticipationCertificate/vendor/autoload.php")) {
+            require_once __DIR__ . "/../../../../UIComponent/UserInterfaceHook/ParticipationCertificate/vendor/autoload.php";
+        }
 	}
-
-
-	/**
-	 * @return bool
-	 */
-	protected function beforeActivation() {
+	protected function beforeActivation(): bool
+    {
 		return $this->beforeUpdate();
 	}
-
-
-	/**
-	 * @return bool
-	 */
-	protected function beforeUpdate() {
+	protected function beforeUpdate(): bool
+    {
 		if (!is_file(__DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/classes/class.ilLearningObjectiveSuggestionsPlugin.php")) {
 			// Note: if we throw an ilPluginException the message of the exception is not displayed --> it's useless
 			ilUtil::sendFailure("Plugin LearningObjectiveSuggestions must be installed", true);
-
 			return false;
 		}
-
-		/*require_once __DIR__ . "/../../../../Cron/CronHook/LearningObjectiveSuggestions/vendor/autoload.php";
-		if (!$this->ilPluginAdmin->isActive('Services', 'Cron', 'crnhk', ilLearningObjectiveSuggestionsPlugin::PLUGIN_NAME)) {
-			ilUtil::sendFailure("Plugin LearningObjectiveSuggestions must be active", true);
-
-			return false;
-		}*/
-
 		return true;
 	}
-
-
-	/**
-	 * @return string
-	 */
-	public function getPluginName() {
+	public function getPluginName(): string
+    {
 		return self::PLUGIN_NAME;
 	}
-
-
-	/**
-	 * @return bool
-	 */
-	protected function beforeUninstall() {
+	protected function beforeUninstall(): bool
+    {
 		return true;
 	}
 }

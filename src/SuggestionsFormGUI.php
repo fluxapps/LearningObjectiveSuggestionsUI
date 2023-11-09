@@ -13,31 +13,12 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
  * @author Stefan Wanzenried <sw@studer-raimann.ch>
  */
 class SuggestionsFormGUI extends \ilPropertyFormGUI {
+	protected LearningObjectiveCourse $course;
+	protected ?\ilObjUser $user;
+	private LearningObjectiveQuery $learning_objective_query;
+	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
 
-	/**
-	 * @var LearningObjectiveCourse
-	 */
-	protected $course;
-	/**
-	 * @var User
-	 */
-	protected $user;
-	/**
-	 * @var LearningObjectiveQuery
-	 */
-	private $learning_objective_query;
-	/**
-	 * @var \ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	protected $pl;
-
-
-	/**
-	 * @param LearningObjectiveCourse $course
-	 * @param User                    $user
-	 * @param LearningObjectiveQuery  $learning_objective_query
-	 */
-	public function __construct(LearningObjectiveCourse $course, User $user, LearningObjectiveQuery $learning_objective_query) {
+	public function __construct(LearningObjectiveCourse $course, \ilObjUser $user, LearningObjectiveQuery $learning_objective_query) {
 		parent::__construct();
 		$this->course = $course;
 		$this->user = $user;
@@ -45,9 +26,8 @@ class SuggestionsFormGUI extends \ilPropertyFormGUI {
 		$this->learning_objective_query = $learning_objective_query;
 		$this->init();
 	}
-
-
-	protected function init() {
+	protected function init(): void
+    {
 		$this->setTitle($this->pl->txt("edit_suggestions_for") . ' ' . $this->user->getFirstname() . ' ' . $this->user->getLastname());
 		$item = new ilAsmSelectInputGUI($this->pl->txt("suggested"), 'suggestions');
 		$item->setInfo($this->pl->txt("suggested_info"));
@@ -70,22 +50,24 @@ class SuggestionsFormGUI extends \ilPropertyFormGUI {
 		$this->addCommandButton(\alouiCourseGUI::CMD_CANCEL, $this->pl->txt("cancel"));
 	}
 
-
-	/**
-	 * @return LearningObjectiveSuggestion[]
-	 */
-	protected function getSuggestions() {
+    /**
+     * @return LearningObjectiveSuggestion[]
+     * @throws \arException
+     */
+	protected function getSuggestions(): array
+    {
 		return LearningObjectiveSuggestion::where(array(
 			'user_id' => $this->user->getId(),
 			'course_obj_id' => $this->course->getId(),
 		))->orderBy('sort')->get();
 	}
 
-
-	/**
-	 * @return LearningObjectiveScore[]
-	 */
-	protected function getScores() {
+    /**
+     * @return LearningObjectiveScore[]
+     * @throws \arException
+     */
+	protected function getScores(): array
+    {
 		return LearningObjectiveScore::where(array(
 			'user_id' => $this->user->getId(),
 			'course_obj_id' => $this->course->getId()

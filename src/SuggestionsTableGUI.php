@@ -14,31 +14,12 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjective
  * @package SRAG\ILIAS\Plugins\AutoLearningObjectivesUI
  */
 class SuggestionsTableGUI extends \ilTable2GUI {
-
-	/**
-	 * @var \ilCtrl
-	 */
-	protected $ctrl;
-	/**
-	 * @var LearningObjectiveCourse
-	 */
-	protected $course;
-	/**
-	 * @var array
-	 */
-	protected $filter = array();
-	/**
-	 * @var LearningObjectiveQuery
-	 */
-	protected $learning_objective_query;
-	/**
-	 * @var \ilTree
-	 */
-	protected $tree;
-	/**
-	 * @var \ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	protected $pl;
+	protected \ilCtrl $ctrl;
+	protected LearningObjectiveCourse $course;
+	protected array $filter = array();
+	protected LearningObjectiveQuery $learning_objective_query;
+	protected \ilTree $tree;
+	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
 
 
 	/**
@@ -62,12 +43,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->initFilter();
 		$this->setExportFormats([ self::EXPORT_EXCEL ]);
 	}
-
-
-	/**
-	 * @return array
-	 */
-	public function getSelectableColumns() {
+	public function getSelectableColumns(): array
+    {
 		return array(
 			'login' => array( 'txt' => 'login', 'default' => true ),
 			'firstname' => array( 'txt' => 'firstname', 'default' => true ),
@@ -78,12 +55,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			'is_cron_active' => array( 'txt' => 'cron', 'default' => true )
 		);
 	}
-
-
-	/**
-	 * Initialize data
-	 */
-	public function parseData() {
+	public function parseData(): void
+    {
 		$this->setExternalSegmentation(true);
 		$this->setExternalSorting(true);
 		$this->determineOffsetAndOrder();
@@ -94,9 +67,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->setData($query->getData());
 		$this->setMaxCount($query->getCount());
 	}
-
-
-	public function initFilter() {
+	public function initFilter(): void
+    {
 		$item = new \ilTextInputGUI($this->pl->txt('login'), 'login');
 		$this->addFilterItemWithValue($item);
 		$item = new \ilTextInputGUI($this->pl->txt('firstname'), 'firstname');
@@ -114,23 +86,12 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$item->setOptions($this->getOrgUnits());
 		$this->addFilterItemWithValue($item);
 	}
-
-
-	/**
-	 * @return array
-	 */
-	protected function getOrgUnits() {
+	protected function getOrgUnits(): array
+    {
 		return array( '' => '' ) + $this->getOrgUnitsRecursive(\ilObjOrgUnit::getRootOrgRefId(), 0);
 	}
-
-
-	/**
-	 * @param array $ref_id
-	 * @param int   $level
-	 *
-	 * @return array
-	 */
-	private function getOrgUnitsRecursive($ref_id, $level) {
+	private function getOrgUnitsRecursive(array $ref_id, int $level): array
+    {
 		$orgus = array();
 		$nodes = $this->tree->getChildsByType($ref_id, 'orgu');
 		foreach ($nodes as $node) {
@@ -140,15 +101,10 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				$orgus += $children;
 			}
 		}
-
 		return $orgus;
 	}
-
-
-	/**
-	 * @return array
-	 */
-	protected function getGroups() {
+	protected function getGroups(): array
+    {
 		$groups = array( '' => '' );
 		$parent_node = $this->tree->getNodeData($this->course->getRefId());
 		$nodes = $this->tree->getSubTree($parent_node, true, 'grp');
@@ -161,12 +117,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 
 		return $groups;
 	}
-
-
-	/**
-	 * @param $item
-	 */
-	protected function addFilterItemWithValue($item) {
+	protected function addFilterItemWithValue($item): void
+    {
 		$this->addFilterItem($item);
 		$item->readFromSession();
 		switch (get_class($item)) {
@@ -187,9 +139,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			$this->filter[$item->getPostVar()] = $value;
 		}
 	}
-
-
-	protected function addColumns() {
+	protected function addColumns(): void
+    {
 		foreach ($this->getSelectableColumns() as $column => $data) {
 			if ($this->isColumnSelected($column)) {
 				$sort = ($column == 'suggestions') ? '' : $column;
@@ -200,12 +151,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			$this->addColumn($this->pl->txt('actions'));
 		}
 	}
-
-
-	/**
-	 * @param array $a_set
-	 */
-	protected function fillRow($a_set) {
+	protected function fillRow(array $a_set): void
+    {
 		foreach (array_keys($this->getSelectableColumns()) as $column) {
 			if (!$this->isColumnSelected($column)) {
 				continue;
@@ -236,14 +183,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 		$this->tpl->setVariable('VALUE', $list->getHTML());
 		$this->tpl->parseCurrentBlock();
 	}
-
-
-	/**
-	 * @param ilExcel $a_excel
-	 * @param int     $a_row
-	 * @param array   $a_set
-	 */
-	protected function fillRowExcel(ilExcel $a_excel, &$a_row, $a_set) {
+	protected function fillRowExcel(ilExcel $a_excel, int &$a_row, array $a_set): void
+    {
 		$col = 0;
 		foreach (array_keys($this->getSelectableColumns()) as $column) {
 
@@ -255,8 +196,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 			$col = $col + 1;
 		}
 	}
-
-	protected function getFormattedValue($column, $a_set) {
+	protected function getFormattedValue($column, $a_set): string {
 		global $DIC;
 
 		$value = $a_set[$column];
@@ -280,9 +220,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				return ($value) ? $value : '&nbsp;';
 		}
 	}
-
-
-	protected function getFormatedValueExcel($column, $a_set) {
+	protected function getFormatedValueExcel($column, $a_set): string {
 		$value = $a_set[$column];
 		switch ($column) {
 			case 'suggestions':
@@ -297,14 +235,8 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 				return ($value) ? $value : ' ';
 		}
 	}
-
-
-	/**
-	 * @param int $user_id
-	 *
-	 * @return LearningObjective[]
-	 */
-	protected function getSuggestedLearningObjectives($user_id) {
+	protected function getSuggestedLearningObjectives(int $user_id): array
+    {
 		$suggestions = LearningObjectiveSuggestion::where(array(
 			'user_id' => $user_id,
 			'course_obj_id' => $this->course->getId()

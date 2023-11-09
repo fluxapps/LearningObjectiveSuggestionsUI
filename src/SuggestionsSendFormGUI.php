@@ -15,39 +15,13 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
  * @author Stefan Wanzenried <sw@studer-raimann.ch>
  */
 class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
-
-	/**
-	 * @var LearningObjectiveCourse
-	 */
-	protected $course;
-	/**
-	 * @var User
-	 */
-	protected $user;
-	/**
-	 * @var LearningObjectiveQuery
-	 */
-	private $learning_objective_query;
-	/**
-	 * @var CourseConfigProvider
-	 */
-	protected $config;
-	/**
-	 * @var Parser
-	 */
-	protected $parser;
-	/**
-	 * @var \ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	protected $pl;
-
-
-	/**
-	 * @param LearningObjectiveCourse $course
-	 * @param User                    $user
-	 * @param Parser                  $parser
-	 */
-	public function __construct(LearningObjectiveCourse $course, User $user, Parser $parser) {
+	protected LearningObjectiveCourse $course;
+	protected ?\ilObjUser $user;
+	private LearningObjectiveQuery $learning_objective_query;
+	protected CourseConfigProvider $config;
+	protected Parser $parser;
+	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
+	public function __construct(LearningObjectiveCourse $course, ilObjUser $user, Parser $parser) {
 		parent::__construct();
 		$this->course = $course;
 		$this->user = $user;
@@ -57,8 +31,6 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$this->pl = \ilLearningObjectiveSuggestionsUIPlugin::getInstance();
 		$this->init();
 	}
-
-
 	protected function init() {
 		$this->setTitle($this->user->getFirstname() . ' ' . $this->user->getLastname() . ' benachrichtigen');
 
@@ -87,12 +59,12 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$this->addCommandButton(\alouiCourseGUI::CMD_SEND_NOTIFICATION, $this->pl->txt("send"));
 		$this->addCommandButton(\alouiCourseGUI::CMD_CANCEL, $this->pl->txt("cancel"));
 	}
-
-
-	/**
-	 * @return LearningObjective[]
-	 */
-	protected function getSuggestedLearningObjectives() {
+    /**
+     * @return LearningObjective[]
+     * @throws \arException
+     */
+	protected function getSuggestedLearningObjectives(): array
+    {
 		$suggestions = LearningObjectiveSuggestion::where(array(
 			'user_id' => $this->user->getId(),
 			'course_obj_id' => $this->course->getId(),
@@ -101,7 +73,6 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		foreach ($suggestions as $suggestion) {
 			$objectives[] = $this->learning_objective_query->getByObjectiveId($suggestion->getObjectiveId());
 		}
-
 		return $objectives;
 	}
 }

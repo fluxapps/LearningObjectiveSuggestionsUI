@@ -6,11 +6,7 @@
  * @author Stefan Wanzenried <sw@studer-raimann.ch>
  */
 class ilAsmSelectInputGUI extends \ilSelectInputGUI {
-
-	/**
-	 * @var array
-	 */
-	protected $asmOptions = array(
+	protected array $asmOptions = array(
 		'sortable' => true,
 		'highlight' => false,
 	);
@@ -18,18 +14,9 @@ class ilAsmSelectInputGUI extends \ilSelectInputGUI {
 	 * @var array
 	 */
 	protected $value = array();
-	/**
-	 * @var \ilTemplate
-	 */
-	protected $tpl;
-	/**
-	 * @var \ilLanguage
-	 */
-	protected $lng;
-	/**
-	 * @var \ilLearningObjectiveSuggestionsUIPlugin
-	 */
-	protected $pl;
+	protected \ilTemplate|\ilGlobalTemplateInterface $tpl;
+	protected \ilLanguage $lng;
+	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
 
 
 	public function __construct($a_title = "", $a_postvar = "") {
@@ -43,9 +30,8 @@ class ilAsmSelectInputGUI extends \ilSelectInputGUI {
 		$this->setPostVar($a_postvar);
 		$this->addCustomAttribute('multiple="multiple"');
 	}
-
-
-	function checkInput() {
+	function checkInput(): bool
+    {
 		$valid = true;
 		if ($this->getRequired()) {
 			$post_var = str_replace('[]', '', $this->getPostVar());
@@ -57,28 +43,24 @@ class ilAsmSelectInputGUI extends \ilSelectInputGUI {
 
 		return $valid;
 	}
-
-
-	public function setPostVar($a_postvar) {
+	public function setPostVar($a_postvar): void
+    {
 		if (substr($a_postvar, - 2) != '[]') {
 			$a_postvar .= '[]';
 		}
 		parent::setPostVar($a_postvar);
 	}
-
-
-	function setValue($a_value) {
+	function setValue($a_value): void
+    {
 		$this->value = $a_value;
 	}
-
-
-	function setValueByArray($a_values) {
+	function setValueByArray($a_values): void
+    {
 		$post_var = str_replace('[]', '', $this->getPostVar());
 		$this->setValue(array_values($a_values[$post_var]));
 	}
-
-
-	protected function renderJavascript() {
+	protected function renderJavascript(): string
+    {
 		$id = $this->getFieldId();
 		$options = array_merge(array(
 			'jQueryUI' => false,
@@ -94,9 +76,8 @@ EOL;
 
 		return $out;
 	}
-
-
-	public function render($a_mode = "") {
+	public function render($a_mode = ""): string
+    {
 		$tpl = new \ilTemplate("tpl.prop_select.html", true, true, "Services/Form");
 		$tpl->setCurrentBlock('cust_attr');
 		$tpl->setVariable('CUSTOM_ATTR', 'multiple="multiple"');
@@ -125,13 +106,8 @@ EOL;
 
 		return $this->renderJavascript() . $tpl->get();
 	}
-
-
-	/**
-	 * @param string $key
-	 * @param        $value
-	 */
-	public function setAsmOption($key, $value) {
+	public function setAsmOption(string $key, $value): void
+    {
 		$this->asmOptions[$key] = $value;
 	}
 }

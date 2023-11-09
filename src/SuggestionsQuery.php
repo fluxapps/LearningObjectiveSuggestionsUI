@@ -11,90 +11,40 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Suggestion\LearningObjective
  * @package SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI
  */
 class SuggestionsQuery {
-
-	/**
-	 * @var LearningObjectiveCourse
-	 */
-	protected $course;
-	/**
-	 * @var array
-	 */
-	protected $filters = array();
-	/**
-	 * @var array
-	 */
-	protected $limit = array( 0, 10 );
-	/**
-	 * @var array
-	 */
-	protected $orderBy = array( 'user_id' => 'ASC' );
-	/**
-	 * @var \ilDB
-	 */
-	protected $db;
-
-
-	/**
-	 * @param LearningObjectiveCourse $course
-	 */
+	protected LearningObjectiveCourse $course;
+	protected array $filters = array();
+	protected array $limit = array( 0, 10 );
+	protected array $orderBy = array( 'user_id' => 'ASC' );
+	protected \ilDBInterface $db;
 	public function __construct(LearningObjectiveCourse $course) {
 		global $DIC;
 		$this->db = $DIC->database();
 		$this->course = $course;
 	}
-
-
-	/**
-	 * @param array $filters
-	 */
-	public function setFilters(array $filters) {
+	public function setFilters(array $filters): void
+    {
 		$this->filters = $filters;
 	}
-
-
-	/**
-	 * @param string $key
-	 * @param mixed  $value
-	 *
-	 * @return $this
-	 */
-	public function filter($key, $value) {
+	public function filter(string $key, mixed $value): static
+    {
 		$this->filters[$key] = $value;
 
 		return $this;
 	}
-
-
-	/**
-	 * @param int $start
-	 * @param int $offset
-	 *
-	 * @return $this
-	 */
-	public function limit($start, $offset) {
+	public function limit(int $start, int $offset): static
+    {
 		$this->limit = array( $start, $offset );
 
 		return $this;
 	}
-
-
-	/**
-	 * @param        $field
-	 * @param string $direction
-	 *
-	 * @return $this
-	 */
-	public function orderBy($field, $direction = 'ASC') {
+	public function orderBy($field, string $direction = 'ASC'): static
+    {
 		$this->orderBy = array( $field => $direction );
 
 		return $this;
 	}
-
-
-	/**
-	 * @return array
-	 */
-	public function getData() {
+	public function getData(): array
+    {
 		$set = $this->db->query($this->getSQL());
 		$data = array();
 		while ($row = $this->db->fetchAssoc($set)) {
@@ -103,24 +53,14 @@ class SuggestionsQuery {
 
 		return $data;
 	}
-
-
-	/**
-	 * @return int
-	 */
-	public function getCount() {
+	public function getCount(): int
+    {
 		$set = $this->db->query($this->getSQL(true));
 
 		return $this->db->numRows($set);
 	}
-
-
-	/**
-	 * @param bool $count
-	 *
-	 * @return string
-	 */
-	protected function getSQL($count = false) {
+	protected function getSQL(bool $count = false): string
+    {
 		$sql = 'SELECT
 				usr_data.usr_id,
 				usr_data.usr_id AS user_id,
@@ -184,7 +124,6 @@ class SuggestionsQuery {
 			list($start, $limit) = $this->limit;
 			$sql .= " LIMIT {$start}, {$limit}";
 		}
-
 		return $sql;
 	}
 }
