@@ -73,4 +73,9 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
     {
 		return true;
 	}
+
+    protected function afterUninstall(): void
+    {
+        //nothing to do
+    }
 }
