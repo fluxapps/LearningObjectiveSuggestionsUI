@@ -14,21 +14,21 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
  */
 class SuggestionsFormGUI extends \ilPropertyFormGUI {
 	protected LearningObjectiveCourse $course;
-	protected ?\ilObjUser $user;
+	protected User $loiUser;
 	private LearningObjectiveQuery $learning_objective_query;
 	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
 
-	public function __construct(LearningObjectiveCourse $course, \ilObjUser $user, LearningObjectiveQuery $learning_objective_query) {
+	public function __construct(LearningObjectiveCourse $course, User $user, LearningObjectiveQuery $learning_objective_query) {
 		parent::__construct();
 		$this->course = $course;
-		$this->user = $user;
+		$this->loiUser = $user;
 		$this->pl = \ilLearningObjectiveSuggestionsUIPlugin::getInstance();
 		$this->learning_objective_query = $learning_objective_query;
 		$this->init();
 	}
 	protected function init(): void
     {
-		$this->setTitle($this->pl->txt("edit_suggestions_for") . ' ' . $this->user->getFirstname() . ' ' . $this->user->getLastname());
+		$this->setTitle($this->pl->txt("edit_suggestions_for") . ' ' . $this->loiUser->getFirstname() . ' ' . $this->loiUser->getLastname());
 		$item = new ilAsmSelectInputGUI($this->pl->txt("suggested"), 'suggestions');
 		$item->setInfo($this->pl->txt("suggested_info"));
 		$item->setRequired(true);
@@ -57,7 +57,7 @@ class SuggestionsFormGUI extends \ilPropertyFormGUI {
 	protected function getSuggestions(): array
     {
 		return LearningObjectiveSuggestion::where(array(
-			'user_id' => $this->user->getId(),
+			'user_id' => $this->loiUser->getId(),
 			'course_obj_id' => $this->course->getId(),
 		))->orderBy('sort')->get();
 	}
@@ -69,7 +69,7 @@ class SuggestionsFormGUI extends \ilPropertyFormGUI {
 	protected function getScores(): array
     {
 		return LearningObjectiveScore::where(array(
-			'user_id' => $this->user->getId(),
+			'user_id' => $this->loiUser->getId(),
 			'course_obj_id' => $this->course->getId()
 		))->orderBy('score', 'DESC')->get();
 	}

@@ -103,6 +103,10 @@ class alouiCourseGUI
         $table->resetFilter();
         $this->index();
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function editSendNotification(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -114,6 +118,10 @@ class alouiCourseGUI
             $this->tpl->setOnScreenMessage('info',$this->pl->txt('suggestions_already_sent'), true);
         }
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function sendNotification(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -133,6 +141,10 @@ class alouiCourseGUI
         $form->setValuesByPost();
         $this->tpl->setContent($form->getHTML());
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function saveSuggestions(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -153,6 +165,10 @@ class alouiCourseGUI
         $form->setValuesByPost();
         $this->tpl->setContent($form->getHTML());
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function editSuggestions(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -163,6 +179,10 @@ class alouiCourseGUI
         $form->setFormAction($this->ctrl->getFormAction($this));
         $this->tpl->setContent($form->getHTML());
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function activateCron(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -175,6 +195,10 @@ class alouiCourseGUI
         $this->ctrl->redirect($this);
 
     }
+
+    /**
+     * @throws ilCtrlException
+     */
     protected function deactivateCron(): void
     {
         $this->ctrl->saveParameter($this, 'user_id');
@@ -190,14 +214,17 @@ class alouiCourseGUI
     {
         $this->index();
     }
+
     /**
      * Fake the course header with title, description, icon etc.
+     * @throws ilCtrlException
+     * @throws ilObjectException
      */
     protected function initCourseHeader(): void
     {
         $this->tpl->setTitle($this->course->getPresentationTitle());
         $this->tpl->setDescription($this->course->getLongDescription());
-        $this->tpl->setTitleIcon(ilObject::_getIcon("", "big", $this->course->getType()), $this->lng->txt("obj_" . $this->course->getType()));
+        $this->tpl->setTitleIcon(ilObject::_getIcon($this->course->getId(), "big", $this->course->getType()), $this->lng->txt("obj_" . $this->course->getType()));
         $this->ctrl->setParameterByClass(ilRepositoryGUI::class, 'ref_id', (int)$_GET['ref_id']);
         $this->tabs->setBackTarget($this->pl->txt("back_to_course"), $this->ctrl->getLinkTargetByClass(array(
             ilRepositoryGUI::class,

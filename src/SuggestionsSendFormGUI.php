@@ -16,15 +16,15 @@ use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\User\User;
  */
 class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 	protected LearningObjectiveCourse $course;
-	protected ?\ilObjUser $user;
+	protected User $loiUser;
 	private LearningObjectiveQuery $learning_objective_query;
 	protected CourseConfigProvider $config;
 	protected Parser $parser;
 	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
-	public function __construct(LearningObjectiveCourse $course, ilObjUser $user, Parser $parser) {
+	public function __construct(LearningObjectiveCourse $course, User $user, Parser $parser) {
 		parent::__construct();
 		$this->course = $course;
-		$this->user = $user;
+		$this->loiUser = $user;
 		$this->config = new CourseConfigProvider($course);
 		$this->learning_objective_query = new LearningObjectiveQuery($this->config);
 		$this->parser = $parser;
@@ -32,7 +32,7 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$this->init();
 	}
 	protected function init() {
-		$this->setTitle($this->user->getFirstname() . ' ' . $this->user->getLastname() . ' benachrichtigen');
+		$this->setTitle($this->loiUser->getFirstname() . ' ' . $this->loiUser->getLastname() . ' benachrichtigen');
 
 		$objectives = $this->getSuggestedLearningObjectives();
 		$item = new \ilNonEditableValueGUI('Empfehlungen', '', true);
@@ -45,13 +45,13 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 		$placeholders = new Placeholders();
 		$item = new \ilTextInputGUI($this->pl->txt("subject"), 'subject');
 		$item->setRequired(true);
-		$subject = $this->parser->parse($this->config->getEmailSubjectTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
+		$subject = $this->parser->parse($this->config->getEmailSubjectTemplate(), $placeholders->getPlaceholders($this->course, $this->loiUser, $objectives));
 		$item->setValue($subject);
 		$this->addItem($item);
 
 		$item = new \ilTextAreaInputGUI($this->pl->txt("body"), 'body');
 		$item->setRequired(true);
-		$body = $this->parser->parse($this->config->getEmailBodyTemplate(), $placeholders->getPlaceholders($this->course, $this->user, $objectives));
+		$body = $this->parser->parse($this->config->getEmailBodyTemplate(), $placeholders->getPlaceholders($this->course, $this->loiUser, $objectives));
 		$item->setValue($body);
 		$item->setRows(10);
 		$this->addItem($item);
@@ -66,7 +66,7 @@ class SuggestionsSendFormGUI extends \ilPropertyFormGUI {
 	protected function getSuggestedLearningObjectives(): array
     {
 		$suggestions = LearningObjectiveSuggestion::where(array(
-			'user_id' => $this->user->getId(),
+			'user_id' => $this->loiUser->getId(),
 			'course_obj_id' => $this->course->getId(),
 		))->orderBy('sort')->get();
 		$objectives = array();

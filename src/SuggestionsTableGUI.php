@@ -1,6 +1,7 @@
 <?php namespace SRAG\ILIAS\Plugins\LearningObjectiveSuggestionsUI;
 
 use ilExcel;
+use ilObjOrgUnit;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\Config\CourseConfigProvider;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjective;
 use SRAG\ILIAS\Plugins\LearningObjectiveSuggestions\LearningObjective\LearningObjectiveCourse;
@@ -22,10 +23,11 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 	protected \ilLearningObjectiveSuggestionsUIPlugin $pl;
 
 
-	/**
-	 * @param                         $a_parent_obj
-	 * @param LearningObjectiveCourse $course
-	 */
+    /**
+     * @param                         $a_parent_obj
+     * @param LearningObjectiveCourse $course
+     * @throws \ilCtrlException
+     */
 	public function __construct($a_parent_obj, LearningObjectiveCourse $course) {
 		global $DIC;
 		$this->setPrefix('alo');
@@ -88,9 +90,9 @@ class SuggestionsTableGUI extends \ilTable2GUI {
 	}
 	protected function getOrgUnits(): array
     {
-		return array( '' => '' ) + $this->getOrgUnitsRecursive(\ilObjOrgUnit::getRootOrgRefId(), 0);
+		return array( '' => '' ) + $this->getOrgUnitsRecursive(ilObjOrgUnit::getRootOrgRefId(), 0);
 	}
-	private function getOrgUnitsRecursive(array $ref_id, int $level): array
+	private function getOrgUnitsRecursive(int $ref_id, int $level): array
     {
 		$orgus = array();
 		$nodes = $this->tree->getChildsByType($ref_id, 'orgu');
@@ -107,7 +109,7 @@ class SuggestionsTableGUI extends \ilTable2GUI {
     {
 		$groups = array( '' => '' );
 		$parent_node = $this->tree->getNodeData($this->course->getRefId());
-		$nodes = $this->tree->getSubTree($parent_node, true, 'grp');
+		$nodes = $this->tree->getSubTree($parent_node, true, ['grp']);
 		foreach ($nodes as $node) {
 			if ($node['deleted']) {
 				continue;

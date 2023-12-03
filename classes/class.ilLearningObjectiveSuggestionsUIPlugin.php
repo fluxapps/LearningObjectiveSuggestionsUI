@@ -78,4 +78,8 @@ class ilLearningObjectiveSuggestionsUIPlugin extends ilUserInterfaceHookPlugin {
     {
         //nothing to do
     }
+
+    public function getImagePath(string $imageName): string {
+        return $this->getDirectory()."/templates/images/".$imageName;
+    }
 }
