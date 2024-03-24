@@ -96,7 +96,7 @@ EOL;
 		}
 		foreach ($this->getOptions() as $option_value => $option_text) {
 			$tpl->setCurrentBlock("prop_select_option");
-			$tpl->setVariable("VAL_SELECT_OPTION", \ilUtil::prepareFormOutput($option_value));
+			$tpl->setVariable("VAL_SELECT_OPTION", \ilLegacyFormElementsUtil::prepareFormOutput($option_value));
 			if (in_array($option_value, $this->value)) {
 				$tpl->setVariable("CHK_SEL_OPTION", 'selected="selected"');
 			}
